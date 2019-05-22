@@ -5,11 +5,15 @@ const lower = document.getElementById("lower")
 const currentState = document.getElementsByClassName("state")
 const restart = document.getElementById("restart")
 const player = document.getElementById("player")
+const winner = document.getElementById("winner")
+console.log(winner)
+
 let cards = {
     players: currentState.length,
     currentPlayer: 0,
-    currentCard: [0, 0],
-    nextCard: [0, 0]
+    currentCard: [...Array(currentState.length)],
+    nextCard: [...Array(currentState.length)],
+    stillIn: [...Array(currentState.length)].fill(true)
 }
 
 const generateDeck = () => {
@@ -41,6 +45,9 @@ const generateDeck = () => {
 const pickNewCard = () => {
     // Function to pick a new random card out of the deck
 
+    if (cards.deck === 0) {
+        cards.deck = generateDeck()
+    }
     // Pick a random number within the length of the list
     let random = Math.floor(Math.random() * cards.deck.length)
 
@@ -62,7 +69,38 @@ const checkIfCorrect = (card1, card2, direction) => {
 
 const nextPlayer = () => {
     cards.currentPlayer = (cards.currentPlayer + 1) % cards.players
+    while (!cards.stillIn[cards.currentPlayer]) {
+        cards.currentPlayer = (cards.currentPlayer + 1) % cards.players
+    }
     player.innerHTML = `It's now player ${cards.currentPlayer}s go`
+}
+
+const checkWinner = () => {
+    winners = []
+    for (i=0; i<cards.players; i++) {
+        if (cards.stillIn[i]) {
+            winners.push(i)
+        }
+    }
+    console.log(winners)
+    if (winners.length === 1) {
+        return winners[0]
+    } else {
+        return false
+    }
+}
+
+const winCondition = () => {
+    theWinner = checkWinner()
+    if (theWinner !== false) {
+        winner.innerHTML = `Player ${theWinner} has won!`
+        resetGame()
+        for (idx of currentState) {
+            idx.innerHTML = "Press restart"
+        }
+    }
+    
+
 }
 
 const resetGame = () => {
@@ -79,6 +117,7 @@ const resetGame = () => {
         nextPlayer()
     }
 
+    cards.stillIn = [...Array(currentState.length)].fill(true)
     player.innerHTML = "It's player 0s go"
 }
 
@@ -110,9 +149,11 @@ higher.addEventListener('click', () => {
                         'higher')) {
         displayNewCard()
     } else {
+        cards.stillIn[cards.currentPlayer] = false;
         currentState[cards.currentPlayer].innerHTML = `Haha, you suck! Next card was ${cards.nextCard[cards.currentPlayer][0]} of ${cards.nextCard[cards.currentPlayer][1]}s`
     }
-    nextPlayer()
+    winCondition();
+    nextPlayer();
 });
 
 lower.addEventListener('click', () => {
@@ -126,8 +167,10 @@ lower.addEventListener('click', () => {
                         'lower')) {
         displayNewCard()
     } else {
+        cards.stillIn[cards.currentPlayer] = false;
         currentState[cards.currentPlayer].innerHTML = `Haha, you suck! Next card was ${cards.nextCard[cards.currentPlayer][0]} of ${cards.nextCard[cards.currentPlayer][1]}s`
     }
+    winCondition();
     nextPlayer()
 });
 
@@ -140,4 +183,5 @@ restart.addEventListener('click', () => {
     for (idx of currentState) {
         idx.innerHTML = "Well done, you've not lost yet"
     }
+    winner.innerHTML = ""
 })
