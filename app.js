@@ -6,6 +6,7 @@ const currentState = document.getElementsByClassName("state")
 const restart = document.getElementById("restart")
 const player = document.getElementById("player")
 let cards = {
+    players: currentState.length,
     currentPlayer: 0,
     currentCard: [0, 0],
     nextCard: [0, 0]
@@ -25,6 +26,7 @@ const generateDeck = () => {
 
     // Reset cards.deck to have no values in it
     cards.deck = []
+
     // For every number in a deck
     for (num of array) {
         // For every suit in a deck
@@ -59,37 +61,53 @@ const checkIfCorrect = (card1, card2, direction) => {
 }
 
 const nextPlayer = () => {
-    cards.currentPlayer = (cards.currentPlayer + 1) % 2
+    cards.currentPlayer = (cards.currentPlayer + 1) % cards.players
     player.innerHTML = `It's now player ${cards.currentPlayer}s go`
 }
 
 const resetGame = () => {
+    // Function to start a new game. It will generate a new deck of cards,
+    // then pick a start card for every player
+
     // Generates new deck
     generateDeck()
 
     // Picks a new card and sets next card equal to the one coming out
-    pickNewCard()
-    displayNewCard()
-    nextPlayer()
-
-    pickNewCard()
-    displayNewCard()
-    nextPlayer()
+    for (i = 0; i < cards.players; i++) {
+        pickNewCard()
+        displayNewCard()
+        nextPlayer()
+    }
 
     player.innerHTML = "It's player 0s go"
 }
 
 const displayNewCard = () => {
+    // All the processes needed to show the next card. This will set the value of 
+    // current card equal to the next card then display this new card
+
     // Makes the next card the current card
     cards.currentCard[cards.currentPlayer] = cards.nextCard[cards.currentPlayer]
+
+    // Display the correct number
     numDisplayed[cards.currentPlayer].innerHTML = cards.currentCard[cards.currentPlayer][0]
+
+    //Display the correct suit
     suitDisplayed[cards.currentPlayer].innerHTML = cards.currentCard[cards.currentPlayer][1]
 }
 
 higher.addEventListener('click', () => {
+    // Event listener for the higher button. This will look at what the next card
+    // will be, if it's higher it will display the card, if it's not it'll troll
+    // the player. It will then go onto the next player.
+
+    // See what the next card will be
     pickNewCard()
-    console.log(cards.currentCard[cards.currentPlayer], cards.nextCard[cards.currentPlayer], 'higher')
-    if (checkIfCorrect(cards.currentCard[cards.currentPlayer], cards.nextCard[cards.currentPlayer], 'higher')) {
+
+    // Compare the cards and check if the next is higher
+    if (checkIfCorrect(cards.currentCard[cards.currentPlayer],
+                        cards.nextCard[cards.currentPlayer],
+                        'higher')) {
         displayNewCard()
     } else {
         currentState[cards.currentPlayer].innerHTML = `Haha, you suck! Next card was ${cards.nextCard[cards.currentPlayer][0]} of ${cards.nextCard[cards.currentPlayer][1]}s`
@@ -98,9 +116,14 @@ higher.addEventListener('click', () => {
 });
 
 lower.addEventListener('click', () => {
+    // Event listener for the lower button. This will look at what the next card
+    // will be, if it's lower it will display the card, if it's not it'll troll
+    // the player. It will then go onto the next player.
+
     pickNewCard()
-    console.log(cards.currentCard[cards.currentPlayer], cards.nextCard[cards.currentPlayer], 'lower')
-    if (checkIfCorrect(cards.currentCard[cards.currentPlayer], cards.nextCard[cards.currentPlayer], 'lower')) {
+    if (checkIfCorrect(cards.currentCard[cards.currentPlayer],
+                        cards.nextCard[cards.currentPlayer],
+                        'lower')) {
         displayNewCard()
     } else {
         currentState[cards.currentPlayer].innerHTML = `Haha, you suck! Next card was ${cards.nextCard[cards.currentPlayer][0]} of ${cards.nextCard[cards.currentPlayer][1]}s`
@@ -110,6 +133,9 @@ lower.addEventListener('click', () => {
 
 
 restart.addEventListener('click', () => {
+    // Event listener for reset button. When pressed will run reset function
+    // then put the state for each player to a state where they haven't lost yet.
+
     resetGame()
     for (idx of currentState) {
         idx.innerHTML = "Well done, you've not lost yet"
