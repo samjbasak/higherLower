@@ -3,17 +3,21 @@ const suitDisplayed = document.getElementsByClassName("suit")
 const higher = document.getElementById("higher")
 const lower = document.getElementById("lower")
 const currentState = document.getElementsByClassName("state")
+const playerNum = document.getElementsByClassName("playerNum")
 const restart = document.getElementById("restart")
 const player = document.getElementById("player")
 const winner = document.getElementById("winner")
-console.log(winner)
+
+for (i=0; i<playerNum.length; i++) {
+    playerNum[i].innerHTML = `Player ${i}`
+}
 
 let cards = {
     players: currentState.length,
     currentPlayer: 0,
-    currentCard: [...Array(currentState.length)],
-    nextCard: [...Array(currentState.length)],
-    stillIn: [...Array(currentState.length)].fill(true)
+    currentCard: Array(currentState.length),
+    nextCard: Array(currentState.length),
+    stillIn: Array(currentState.length).fill(true)
 }
 
 const generateDeck = () => {
@@ -45,7 +49,7 @@ const generateDeck = () => {
 const pickNewCard = () => {
     // Function to pick a new random card out of the deck
 
-    if (cards.deck === 0) {
+    if (cards.deck.length === 0) {
         cards.deck = generateDeck()
     }
     // Pick a random number within the length of the list
@@ -68,39 +72,63 @@ const checkIfCorrect = (card1, card2, direction) => {
 }
 
 const nextPlayer = () => {
+    // Function to find the next player based on who is left in the game
+
+    // Pick the next player
     cards.currentPlayer = (cards.currentPlayer + 1) % cards.players
+
+    // If the player isn't in the game anymore skip over them
     while (!cards.stillIn[cards.currentPlayer]) {
         cards.currentPlayer = (cards.currentPlayer + 1) % cards.players
     }
+    // State which player is having a go
     player.innerHTML = `It's now player ${cards.currentPlayer}s go`
 }
 
 const checkWinner = () => {
+    // Checks how many people are left in the game. If these's only one it's a win
+    // for that player. Returns the winner if there is one, otherwise returns false.
+
+    // Make an empty array of potential winners
     winners = []
+
+    // Loops through all possible players
     for (i=0; i<cards.players; i++) {
+        // If the player is still in they get added to the list orf potential
+        // winners
         if (cards.stillIn[i]) {
             winners.push(i)
         }
     }
-    console.log(winners)
+    //console.log(winners)
+
+    // Check if there's only one player still in
     if (winners.length === 1) {
+        // Return the winner
         return winners[0]
     } else {
+        // Return false showing there is no winner
         return false
     }
 }
 
 const winCondition = () => {
+    // Function to update the game if there is a winner
+
+    // Check if there is a winner
     theWinner = checkWinner()
-    if (theWinner !== false) {
+
+    // If there is a winner let the players know and update the board
+    if (theWinner) {
+        // Say a player has won
         winner.innerHTML = `Player ${theWinner} has won!`
+        // Reset the game
         resetGame()
+        // Put the current state of all players to Press restart
         for (idx of currentState) {
             idx.innerHTML = "Press restart"
         }
     }
-    
-
 }
 
 const resetGame = () => {
@@ -114,10 +142,11 @@ const resetGame = () => {
     for (i = 0; i < cards.players; i++) {
         pickNewCard()
         displayNewCard()
+        currentState[i].innerHTML = "Well done, you've not lost yet"
         nextPlayer()
     }
 
-    cards.stillIn = [...Array(currentState.length)].fill(true)
+    cards.stillIn = Array(currentState.length).fill(true)
     player.innerHTML = "It's player 0s go"
 }
 
@@ -147,12 +176,18 @@ higher.addEventListener('click', () => {
     if (checkIfCorrect(cards.currentCard[cards.currentPlayer],
                         cards.nextCard[cards.currentPlayer],
                         'higher')) {
+        // If correct show the next card
         displayNewCard()
     } else {
+        // Remove the player from the game
         cards.stillIn[cards.currentPlayer] = false;
+        // Tell the player they suck
         currentState[cards.currentPlayer].innerHTML = `Haha, you suck! Next card was ${cards.nextCard[cards.currentPlayer][0]} of ${cards.nextCard[cards.currentPlayer][1]}s`
     }
+
+    // Check if there's a winner and implement win condition if there is
     winCondition();
+    // Move onto the next player
     nextPlayer();
 });
 
@@ -165,12 +200,18 @@ lower.addEventListener('click', () => {
     if (checkIfCorrect(cards.currentCard[cards.currentPlayer],
                         cards.nextCard[cards.currentPlayer],
                         'lower')) {
+        // If correct show the next card
         displayNewCard()
     } else {
+        // Remove the player from the game
         cards.stillIn[cards.currentPlayer] = false;
+        // Tell the player they suck
         currentState[cards.currentPlayer].innerHTML = `Haha, you suck! Next card was ${cards.nextCard[cards.currentPlayer][0]} of ${cards.nextCard[cards.currentPlayer][1]}s`
     }
+
+    // Check if there's a winner and implement win condition if there is
     winCondition();
+    // Move onto the next player
     nextPlayer()
 });
 
@@ -180,8 +221,6 @@ restart.addEventListener('click', () => {
     // then put the state for each player to a state where they haven't lost yet.
 
     resetGame()
-    for (idx of currentState) {
-        idx.innerHTML = "Well done, you've not lost yet"
-    }
+    // Remove the 'winner' token at the top
     winner.innerHTML = ""
 })
