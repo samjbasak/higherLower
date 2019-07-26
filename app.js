@@ -224,3 +224,5 @@ restart.addEventListener('click', () => {
     // Remove the 'winner' token at the top
     winner.innerHTML = ""
 })
+
+console.log("hello")
